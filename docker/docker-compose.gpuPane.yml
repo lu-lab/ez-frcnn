@@ -1,0 +1,27 @@
+services:
+  ez-frcnn:
+    image: jacobwheelock/ez-frcnn:latest
+    container_name: ez-frcnn
+    volumes:
+      - ../:/app
+    command: panel serve ./pane/annotate.py ./pane/train.py ./pane/inference.py --autoreload --index ./pane/index.html
+    ports:
+      - "8888:8888"
+      - "8000:8000"
+      - "5006:5006"
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: no
+
+    networks:
+      - ez-frcnn-net
+
+networks:
+  ez-frcnn-net:
+    name: ez-frcnn-net

@@ -1,0 +1,16 @@
+services:
+  ez-frcnn:
+    image: jacobwheelock/ez-frcnn:latest
+    container_name: ez-frcnn
+    volumes:
+      - ../:/app
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='351'
+    ports:
+      - "8888:8888"
+    restart: no
+    networks:
+      - ez-frcnn-net
+
+networks:
+  ez-frcnn-net:
+    name: ez-frcnn-net

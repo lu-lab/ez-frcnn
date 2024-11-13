@@ -1,0 +1,1 @@
+Keep images you want to annotate in this folder
