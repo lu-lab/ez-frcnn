@@ -70,7 +70,7 @@ Inference is when the trained model applies what it’s learned to new, unlabele
 EZ-FRCNN was built to make machine learning accessible and user-friendly. Follow these steps, experiment, and soon you’ll have a trained model that recognizes your objects of interest with minimal effort!
 
 ## Documentation
-Coming Soon!
+View the full documentation for EZ-FRCNN [here](https://erinshappell.github.io/ez-frcnn-docs).
 
 ## References
 EZ-FRCNN is an implementation of Faster R-CNN, an algorithm developed by [Ren et al](https://ieeexplore.ieee.org/document/7485869).
