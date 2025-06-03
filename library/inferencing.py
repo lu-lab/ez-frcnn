@@ -1,3 +1,12 @@
+################################################################################
+# inferencing.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module provides helper functions for evaluating trained object detection models,
+# saving results, and running inference on video data.
+#
+################################################################################
+# Imports
 import numpy as np
 import torch
 import cv2
@@ -9,7 +18,19 @@ import os
 from .utils import *
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+################################################################################   
 def load_model(model_name, MODEL_DIR, NUM_CLASSES):
+    """
+    Loads a trained model from disk and prepares it for evaluation.
+
+    Inputs:
+        model_name (str):  Filename of the saved model weights.
+        MODEL_DIR (str):   Directory path where the model files are stored.
+        NUM_CLASSES (int): Number of output classes for the model.
+
+    Output:
+        nn.Module: The loaded PyTorch model set to evaluation mode on the appropriate device.
+    """
     # set the computation device
     modelPath = './models/' + model_name
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -21,7 +42,20 @@ def load_model(model_name, MODEL_DIR, NUM_CLASSES):
     model.eval()
     return model
 
+################################################################################   
 def saveResultsToCSV(csvFileName, results, OUT_DIR):
+    """
+    Saves detection results to a CSV file with specified columns.
+
+    Inputs:
+        csvFileName (str):      Name of the CSV file (without extension) to save results.
+        results (list of dict): List of detection result dictionaries containing keys
+                                'image_name', 'boxes', 'classes', and 'scores'.
+        OUT_DIR (str):          Directory path where the CSV file will be saved.
+
+    Output:
+        None: Writes the results to a CSV file at the specified location.
+    """
     csv_path = os.path.join(OUT_DIR, f"{csvFileName}.csv")
     
     # Open CSV file and write the data
@@ -31,8 +65,28 @@ def saveResultsToCSV(csvFileName, results, OUT_DIR):
         
         for result in results:
             writer.writerow([result['image_name'], result['boxes'], result['classes'], result['scores']])
-            
+
+################################################################################               
 def inference_video(DIR_TEST, OUT_DIR, vidName, model, detection_threshold, CLASSES, save_detections=False):
+    """
+    Runs object detection on a video, annotates detected objects frame-by-frame, 
+    optionally saves detected regions, and writes the annotated video to disk.
+
+    Inputs:
+        DIR_TEST (str):                   Path to the input video file for inference.
+        OUT_DIR (str):                    Directory where output video and detected regions (optional) will be saved.
+        vidName (str):                    Filename for the output annotated video.
+        model (torch.nn.Module):          Trained object detection model.
+        detection_threshold (float):      Confidence threshold for filtering detections.
+        CLASSES (list):                   List of class names corresponding to model outputs.
+        save_detections (bool, optional): If True, saves detected bounding box regions as separate images. Default is False.
+
+    Outputs:
+        list: A list containing three elements for all frames:
+            - bboxes (list): Detected bounding boxes per frame.
+            - classes (list): Detected class labels per frame.
+            - sscores (list): Detection scores per frame.
+    """
     vid = cv2.VideoCapture(DIR_TEST)
     property_id = int(cv2.CAP_PROP_FRAME_COUNT) 
     NUM_FRAMES = int(cv2.VideoCapture.get(vid, property_id))
@@ -107,7 +161,28 @@ def inference_video(DIR_TEST, OUT_DIR, vidName, model, detection_threshold, CLAS
     print('TEST PREDICTIONS COMPLETE') 
     return [bboxes, classes, sscores]
 
+################################################################################   
 def inference_images(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES, tqdmBar, inf_fig):
+    """
+    Performs object detection on all images in a specified directory, annotates and saves the results, 
+    and records detection details for further analysis.
+
+    Inputs:
+        DIR_TEST (str):              Path to the directory containing input images.
+        model (torch.nn.Module):     Trained object detection model.
+        OUT_DIR (str):               Directory where annotated images and results CSV will be saved.
+        detection_threshold (float): Confidence threshold for filtering detections.
+        CLASSES (list):              List of class names corresponding to model output labels.
+        tqdmBar (callable):          Progress bar function for iterating over images.
+        inf_fig (object):            Visualization object used to display annotated images.
+
+    Outputs:
+        list: A list of dictionaries, each containing:
+            - 'image_name' (str): Filename of the image.
+            - 'boxes' (list):     Detected bounding boxes as lists of coordinates.
+            - 'classes' (list):   Predicted class labels.
+            - 'scores' (list):    Confidence scores for detections.
+    """
     imagePath = glob.glob(f"{DIR_TEST}/*.png")
     image_extensions = ['jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp', 'tif']
     all_extensions = image_extensions + [ext.upper() for ext in image_extensions]  # Add uppercase versions
@@ -197,8 +272,22 @@ def inference_images(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES, tqd
     print('TEST PREDICTIONS COMPLETE') 
     return results
 
+################################################################################   
 def load_and_preprocess_image(file_path, target_size=(800, 800)):
-    """Load and preprocess an image with resizing for inference, while storing original dimensions."""
+    """
+    Loads an image from disk, resizes it to a target size, converts it to RGB, normalizes pixel values,
+    and transforms it into a PyTorch tensor suitable for model input.
+
+    Inputs:
+        file_path (str):     Path to the input image file.
+        target_size (tuple): Desired output image size as (width, height). Default is (800, 800).
+
+    Outputs:
+        tuple: A tuple containing:
+            - image_tensor (torch.Tensor): Preprocessed image tensor of shape (3, target_height, target_width).
+            - filename (str):              The basename of the input image file.
+            - original_size (tuple):       Original image dimensions as (width, height).
+    """
     orig_image = cv2.imread(file_path)
     orig_height, orig_width = orig_image.shape[:2]
     resized_image = cv2.resize(orig_image, target_size)  # Resize to fixed size
@@ -206,8 +295,20 @@ def load_and_preprocess_image(file_path, target_size=(800, 800)):
     image_tensor = torch.tensor(np.transpose(image_rgb, (2, 0, 1)), dtype=torch.float)
     return image_tensor, os.path.basename(file_path), (orig_width, orig_height)
 
+################################################################################   
 def scale_boxes_to_original(boxes, original_size, resized_size=(800, 800)):
-    """Scale bounding boxes back to original image size."""
+    """
+    Scales bounding box coordinates from a resized image back to the original image dimensions.
+
+    Inputs:
+        boxes (array-like):    Array of bounding boxes with coordinates [x_min, y_min, x_max, y_max] 
+                               relative to the resized image.
+        original_size (tuple): Original image size as (width, height).
+        resized_size (tuple):  Resized image size as (width, height). Default is (800, 800).
+
+    Outputs:
+        numpy.ndarray: Array of bounding boxes scaled to the original image size.
+    """
     orig_width, orig_height = original_size
     resized_width, resized_height = resized_size
     x_scale = orig_width / resized_width
@@ -221,7 +322,24 @@ def scale_boxes_to_original(boxes, original_size, resized_size=(800, 800)):
         ])
     return np.array(scaled_boxes)
 
+################################################################################   
 def inference_images_fast(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES, tqdmBar, batch_size=4):
+    """
+    Performs batch inference on images in a directory using the provided model, with optional GPU acceleration.
+
+    Inputs:
+        DIR_TEST (str):              Directory path containing images for inference.
+        model (torch.nn.Module):     Trained object detection model.
+        OUT_DIR (str):               Directory path to save inference results.
+        detection_threshold (float): Minimum confidence score to consider a detection valid.
+        CLASSES (list):              List of class names corresponding to model labels.
+        tqdmBar (iterable):          Progress bar iterator for displaying progress.
+        batch_size (int, optional):  Number of images to process per batch. Default is 4.
+
+    Outputs:
+        list of dict: Each dict contains image filename, bounding boxes (scaled to original image size), 
+                      predicted classes, and detection scores for that image.
+    """
     # Collect all image paths
     image_extensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp']
     all_image_paths = []
@@ -279,8 +397,27 @@ def inference_images_fast(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES
     
     return results
 
-
+################################################################################   
 def inference_images_figs(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES):
+    """
+    Performs inference on images in a directory using the given model, annotates detected objects with bounding boxes 
+    and class labels, and overlays enlarged views of detected regions on the original images. Saves annotated images with 
+    bounding boxes and enlarged detected regions overlaid to OUT_DIR.
+
+    Inputs:
+        DIR_TEST (str):              Directory path containing input images.
+        model (torch.nn.Module):     Trained object detection model.
+        OUT_DIR (str):               Directory path to save annotated output images.
+        detection_threshold (float): Minimum confidence score to consider a detection valid.
+        CLASSES (list):              List of class names corresponding to model output labels.
+
+    Outputs:
+        list: A list containing three elements:
+            - bboxes (list):  Detected bounding boxes per image.
+            - classes (list): Predicted class labels per image.
+            - sscores (list): Detection scores per image.
+
+    """
     imagePath = glob.glob(f"{DIR_TEST}/*.png")
     image_extensions = ['jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp', 'tif']
     all_extensions = image_extensions + [ext.upper() for ext in image_extensions]  # Add uppercase versions

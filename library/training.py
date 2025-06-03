@@ -1,3 +1,12 @@
+################################################################################
+# training.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module provides functions to create, load, train, and validate a Faster R-CNN model
+# for object detection tasks using PyTorch and torchvision.
+#
+################################################################################
+# Imports
 import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -10,8 +19,17 @@ import numpy as np
 from .utils import get_loaders
 from .utils import collate_fn
 
+################################################################################   
 def create_model(num_classes):
-    
+    """
+    Creates a Faster R-CNN model pre-trained on COCO and modifies its head for a custom number of classes.
+
+    Inputs:
+        num_classes (int): Number of output classes for detection (including background).
+
+    Outputs:
+        torchvision.models.detection.FasterRCNN: The modified Faster R-CNN model ready for training or inference.
+    """
     # load Faster RCNN pre-trained model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(weights='COCO_V1')
     
@@ -21,7 +39,19 @@ def create_model(num_classes):
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes) 
     return model
 
+################################################################################   
 def load_model_train(model_name, MODEL_DIR, NUM_CLASSES):
+    """
+    Loads a trained model for inference or further training.
+
+    Inputs:
+        model_name (str):  Filename of the saved model weights.
+        MODEL_DIR (str):   Directory where the model weights are stored.
+        NUM_CLASSES (int): Number of output classes the model predicts.
+
+    Outputs:
+        torch.nn.Module: The model loaded with trained weights, moved to the appropriate device (CPU or GPU).
+    """
     # set the computation device
     modelPath = './models/' + model_name
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -32,7 +62,23 @@ def load_model_train(model_name, MODEL_DIR, NUM_CLASSES):
     ))
     return model
 
+################################################################################   
 def train(train_data_loader, model, optimizer, train_loss_list, train_loss_hist, train_itr, DEVICE):
+    """
+    Performs one epoch of training on the provided model.
+
+    Inputs:
+        train_data_loader (DataLoader):    Iterable over training dataset batches.
+        model (torch.nn.Module):           The model to train.
+        optimizer (torch.optim.Optimizer): Optimizer used for updating model weights.
+        train_loss_list (list):            List to store loss values per iteration.
+        train_loss_hist (generator):       Generator to track or log loss history.
+        train_itr (int):                   Current training iteration count.
+        DEVICE (torch.device):             Device (CPU or GPU) to perform computations on.
+
+    Outputs:
+        train_loss_list (list): Updated list of training loss values.
+    """
     print('Training')
     #global train_itr
     
@@ -58,8 +104,22 @@ def train(train_data_loader, model, optimizer, train_loss_list, train_loss_hist,
         #prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
     return train_loss_list
 
-# function for running validation iterations
+################################################################################   
 def validate(valid_data_loader, model, val_loss_list, val_loss_hist, val_itr, DEVICE):
+    """
+    Performs one epoch of validation on the provided model.
+
+    Inputs:
+        valid_data_loader (DataLoader): Iterable over validation dataset batches.
+        model (torch.nn.Module):   The model to validate.
+        val_loss_list (list):      List to store validation loss values per iteration.
+        val_loss_hist (generator): Generator to track or log validation loss history.
+        val_itr (int):             Current validation iteration count.
+        DEVICE (torch.device):     Device (CPU or GPU) to perform computations on.
+
+    Outputs:
+        val_loss_list (list): Updated list of validation loss values.
+    """
     print('Validating')
     #global val_itr
     
@@ -83,9 +143,18 @@ def validate(valid_data_loader, model, val_loss_list, val_loss_hist, val_itr, DE
         #prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
     return val_loss_list
 
+################################################################################   
 # this class keeps track of the training and validation loss values...
 # ... and helps to get the average for each epoch as well
 class Averager:
+    """
+    Utility class to compute and maintain the running average of numeric values.
+
+    Methods:
+        send(value):      Add a new value to the running total and increment count.
+        value (property): Returns the current average of all values received.
+        reset():          Resets the total and count to start a new average calculation.
+    """
     def __init__(self):
         self.current_total = 0.0
         self.iterations = 0.0
@@ -105,8 +174,31 @@ class Averager:
         self.current_total = 0.0
         self.iterations = 0.0
 
-
+################################################################################   
 def train_model(model, train_loader, valid_loader, DEVICE, MODEL_NAME, NUM_EPOCHS, OUT_DIR, PLOT_DIR, SAVE_MODEL_EPOCH, SAVE_PLOTS_EPOCH, tqdm_all, train_loss_mpl):
+    """
+    Train a given PyTorch model with training and validation datasets, 
+    periodically saving model checkpoints and loss plots.
+
+    Inputs:
+        model (torch.nn.Module):       The model to train.
+        train_loader (DataLoader):     DataLoader for training dataset.
+        valid_loader (DataLoader):     DataLoader for validation dataset.
+        DEVICE (torch.device):         Device on which to run training (CPU or GPU).
+        MODEL_NAME (str):              Base name for saving model checkpoints.
+        NUM_EPOCHS (int):              Total number of epochs for training.
+        OUT_DIR (str):                 Directory to save model checkpoints.
+        PLOT_DIR (str):                Directory to save training/validation loss plots.
+        SAVE_MODEL_EPOCH (int):        Frequency (in epochs) to save the model.
+        SAVE_PLOTS_EPOCH (int):        Frequency (in epochs) to save the loss plots.
+        tqdm_all (iterable):           Iterable (e.g., tqdm wrapper) for epoch iteration.
+        train_loss_mpl (Panel object): Matplotlib figure holder for live loss plot updates.
+
+    Output:
+        list: A list containing two elements:
+            - train_loss_list: Loss values for all training iterations.
+            - val_loss_list:   Loss values for all validation iterations.
+    """
     model = model.to(DEVICE)
     # get the model parameters
     params = [p for p in model.parameters() if p.requires_grad]
@@ -197,7 +289,28 @@ def train_model(model, train_loader, valid_loader, DEVICE, MODEL_NAME, NUM_EPOCH
         plt.close('all')
     return [train_loss_list, val_loss_list]
 
+################################################################################   
 def train_model_no_val(model, train_loader, valid_loader, DEVICE, MODEL_NAME, NUM_EPOCHS, OUT_DIR, PLOT_DIR, SAVE_MODEL_EPOCH, SAVE_PLOTS_EPOCH):
+    """
+    Train a PyTorch model using only the training dataset, without validation.
+
+    Inputs:
+        model (torch.nn.Module):   The model to train.
+        train_loader (DataLoader): DataLoader for training dataset.
+        valid_loader (DataLoader): DataLoader for validation dataset (unused).
+        DEVICE (torch.device):     Device for training (CPU or GPU).
+        MODEL_NAME (str):          Base filename for saving model checkpoints.
+        NUM_EPOCHS (int):          Number of training epochs.
+        OUT_DIR (str):             Directory to save model checkpoints.
+        PLOT_DIR (str):            Directory to save training loss plots.
+        SAVE_MODEL_EPOCH (int):    Frequency (in epochs) to save the model.
+        SAVE_PLOTS_EPOCH (int):    Frequency (in epochs) to save training loss plots.
+
+    Output:
+        list: A list containing two elements:
+            - train_loss_list: Loss values for all training iterations.
+            - val_loss_list:   Empty list (validation losses not tracked).
+    """
     model = model.to(DEVICE)
     # get the model parameters
     params = [p for p in model.parameters() if p.requires_grad]

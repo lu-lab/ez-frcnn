@@ -1,3 +1,13 @@
+################################################################################
+# training.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module defines a custom `Dataset` class for loading images and corresponding 
+# bounding box annotations in Pascal VOC XML format. It also includes utility functions 
+# for batching data and creating PyTorch `DataLoader` objects for training and validation.
+#
+################################################################################
+# Imports
 import torch
 from torch.utils.data import Dataset, DataLoader
 import cv2
@@ -7,14 +17,52 @@ import csv
 import numpy as np
 import os
 
+################################################################################   
 def collate_fn(batch):
     """
-    To handle the data loading as different images may have different number 
-    of objects and to handle varying size tensors as well.
+    Custom collate function to merge a list of samples into a batch.
+
+    Inputs:
+        batch (list): List of samples, where each sample is a tuple of data elements.
+
+    Output:
+        tuple: Tuple of tuples, where each inner tuple contains all elements
+               of a given type from the batch (e.g., images, targets).
+
     """
     return tuple(zip(*batch))
 
+################################################################################   
 class getDataset(Dataset):
+    """
+    Custom PyTorch Dataset for loading images and corresponding bounding box annotations
+    from a directory containing image files and Pascal VOC-style XML annotation files.
+
+    Attributes:
+        dir_path (str):                  Directory path containing images and XML annotation files.
+        width (int):                     Desired image width after resizing.
+        height (int):                    Desired image height after resizing.
+        transforms (callable, optional): Optional transformations to be applied on the images and bounding boxes.
+        classes (list):                  List of unique class names parsed from annotation XML files, with 'background' as the first class.
+        all_images (list):               Sorted list of image filenames in the dataset directory.
+
+    Methods:
+        get_classes_from_annotations():
+            Parses XML annotation files to extract all unique classes.
+
+        __getitem__(idx):
+            Loads and processes the image and its annotations at index `idx`.
+            Applies resizing and optional transformations.
+            Returns the processed image tensor and target dictionary with bounding boxes and labels.
+
+        __len__():
+            Returns the total number of images in the dataset.
+
+    Usage:
+        dataset = getDataset(dir_path='path/to/data', width=224, height=224, transforms=transform_function)
+        image, target = dataset[0]
+
+    """
     def __init__(self, dir_path, width, height, transforms=None):
         self.transforms = transforms
         self.dir_path = dir_path
@@ -152,7 +200,23 @@ class getDataset(Dataset):
     def __len__(self):
         return len(self.all_images)
 
+################################################################################   
 def get_loaders(train_dataset, valid_dataset, BATCH_SIZE, collate_fn):
+    """
+    Create DataLoader objects for training and validation datasets.
+
+    Inputs:
+        train_dataset (Dataset): PyTorch Dataset object for training data.
+        valid_dataset (Dataset): PyTorch Dataset object for validation data.
+        BATCH_SIZE (int):        Number of samples per batch to load.
+        collate_fn (callable):   Function to merge a list of samples into a mini-batch, used for handling variable-size inputs.
+
+    Output:
+        list: A list containing two DataLoader objects:
+              - train_loader: DataLoader for the training dataset with shuffling enabled.
+              - valid_loader: DataLoader for the validation dataset without shuffling.
+
+    """
     train_loader = DataLoader(
     train_dataset,
     batch_size=BATCH_SIZE,

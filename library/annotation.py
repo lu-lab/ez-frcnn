@@ -1,3 +1,15 @@
+################################################################################
+# annotation.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module provides tools to facilitate manual bounding box annotation of images within
+# Jupyter environments using ipywidgets and jupyter_bbox_widget. It supports encoding images,
+# displaying an interactive annotation interface, managing navigation and annotation submission,
+# and organizing image and XML annotation files into training and testing datasets. Additionally,
+# it converts XML annotations to CSV format for downstream processing.
+#
+################################################################################
+# Imports
 from jupyter_bbox_widget import BBoxWidget
 import ipywidgets as widgets
 from ipywidgets import Layout
@@ -12,13 +24,37 @@ import cv2
 import base64
 import pandas as pd
 
+################################################################################
 def encode_image(filepath):
+    """
+    Encodes an image file as a base64 string with a data URI prefix.
+
+    Inputs:
+        filepath (str): The path to the image file to be encoded.
+
+    Output:
+        str: A base64-encoded string representation of the image,
+             prefixed with "data:image/png;base64," for embedding in HTML or CSS.
+
+    """
     with open(filepath, 'rb') as f:
         image_bytes = f.read()
     encoded = str(base64.b64encode(image_bytes), 'utf-8')
     return "data:image/png;base64,"+encoded
 
+################################################################################
 def init_annotations(classes):
+    """
+    Initializes an interactive image annotation interface using Jupyter widgets.
+
+    Inputs:
+        classes (list of str): A list of class labels that users can assign to bounding boxes.
+
+    Output:
+        VBox: A widget container that includes image display, navigation buttons,
+              a label, and a progress bar for annotating images in a directory.
+
+    """
     global files, annotations, current_index  # Ensure these are accessible globally
     path = './annotations/'
     current_index = 0  # Initialize the index variable
@@ -141,17 +177,20 @@ def init_annotations(classes):
    
     return w_container
 
-
+################################################################################
 def split_images_and_xml(source_folder, train_folder='./images/train/', test_folder='./images/test/', test_ratio=0.1):
     """
-    Splits images and their corresponding XML files into training and testing folders randomly.
-    Outputs individual CSV files for each image's annotations, along with the XML files.
-    
-    Parameters:
-    - source_folder: Folder containing the images and XML files.
-    - train_folder: Destination folder for the training split.
-    - test_folder: Destination folder for the testing split.
-    - test_ratio: Fraction of data to be used as test set. Default is 0.1 for 10%.
+    Randomly splits a set of images and corresponding XML annotation files into training and testing folders.
+    Generates individual CSV annotation files for each image based on its XML.
+
+    Inputs:
+        source_folder (str): Folder containing the original image and XML files.
+        train_folder (str):  Destination folder for training images and annotations. Default is './images/train/'.
+        test_folder (str):   Destination folder for testing images and annotations. Default is './images/test/'.
+        test_ratio (float):  Proportion of the dataset to allocate to the test set. Default is 0.1 (10%).
+
+    Output:
+        None
     """
     # Ensure the train and test folders exist
     os.makedirs(train_folder, exist_ok=True)
