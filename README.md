@@ -18,7 +18,7 @@ We provide instructions for installing EZ-FRCNN on Windows or MacOS below. While
 2. Launch Docker Desktop.
 3. [Download](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/JacobWheelock/ez-frcnn) or clone this repository.
 4. Extract the contents of the ZIP file downloaded in the last step to a folder of your choice (SKIP if you used `git clone`).
-5. Open the EZ-FRCNN folder and double-click `ez-frcnn.bat` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnn-pane.bat` to launch the GUI.
+5. Open the EZ-FRCNN folder and double-click `ez-frcnn.bat` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.bat` to launch the GUI.
 
 ## Installation (MacOS)
 1. Navigate to our [Mac branch of this repository](https://github.com/JacobWheelock/ez-frcnn/tree/mac).
@@ -27,7 +27,7 @@ We provide instructions for installing EZ-FRCNN on Windows or MacOS below. While
 4. [Download](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/JacobWheelock/ez-frcnn/tree/mac) or clone the [Mac branch of this repository](https://github.com/JacobWheelock/ez-frcnn/tree/mac).
 5. Extract the contents of the ZIP file downloaded in the last step to a folder of your choice (SKIP if you used `git clone`).
 6. Open the EZ-FRCNN folder, double click `ez-frcnn.dmg`, and drag the `.app` file into your current working folder.
-7. Double-click `ez-frcnn.app` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnn-pane.dmg` to launch the GUI.
+7. Double-click `ez-frcnn.app` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.dmg` to launch the GUI.
 
 ## Getting Started
 ### Step 1: Annotation - Labeling your Images
