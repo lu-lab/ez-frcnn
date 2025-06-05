@@ -1,8 +1,31 @@
+################################################################################
+# plotting.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module provides a helper function to visualize annotated training samples
+# from an object detection dataset. Useful for debugging datasets, inspecting annotations, 
+# and verifying preprocessing steps.
+#
+################################################################################
+# Imports
 import cv2
 import matplotlib.pyplot as plt
 from .utils import getDataset
 
+################################################################################   
 def visualize_sample(TRAIN_DIR, RESIZE_TO, index):
+    """
+    Visualizes a single sample image with annotated bounding boxes and class labels from a dataset.
+
+    Inputs:
+        TRAIN_DIR (str): Directory path containing training images and annotations.
+        RESIZE_TO (int): Size (width and height) to which images are resized.
+        index (int):     Index of the sample image in the dataset to visualize.
+
+    Outputs:
+        matplotlib.figure.Figure: Figure object displaying the image with bounding boxes and labels.
+
+    """
     dataset = getDataset(
         TRAIN_DIR, RESIZE_TO, RESIZE_TO
     )

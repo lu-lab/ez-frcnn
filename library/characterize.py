@@ -1,3 +1,20 @@
+################################################################################
+# characterize.py
+# Written by Jacob Wheelock & Erin Shappell for Lu Lab
+# 
+# This module provides functions to facilitate training experiments with object detection
+# models in PyTorch. It includes utilities for:
+#
+# - Randomly subsampling datasets for controlled experiments
+# - Computing mean Average Precision (mAP) metrics using torchmetrics
+# - Running systematic training experiments across varying dataset sizes
+# - Visualizing model performance with plots of validation mAP and its variability
+#
+# Designed to streamline experimentation on how training dataset size affects detection
+# model accuracy, enabling reproducible evaluation and analysis.
+#
+################################################################################
+# Imports
 from torch.utils.data import Subset
 import numpy as np
 import torch
@@ -7,12 +24,37 @@ import matplotlib.pyplot as plt
 from .utils import *
 from .training import *
 
+################################################################################
 def get_subsampled_dataset(full_dataset, num_samples):
-    """ Randomly subsample the dataset to the specified number of samples. """
+    """
+    Returns a randomly subsampled subset of a given dataset.
+
+    Inputs:
+        full_dataset (Dataset): A PyTorch-style dataset to sample from.
+        num_samples (int): The number of samples to include in the returned subset.
+
+    Output:
+        Subset: A torch.utils.data.Subset containing `num_samples` randomly selected items
+                from the original dataset.
+
+    """
     indices = np.random.permutation(len(full_dataset))[:num_samples]
     return Subset(full_dataset, indices)
 
+################################################################################
 def get_mAP(dataloader, model, device):
+    """
+    Computes the mean Average Precision (mAP) for a given object detection model on a dataset.
+
+    Inputs:
+        dataloader (DataLoader): A PyTorch DataLoader providing batches of images and targets.
+        model (nn.Module): The object detection model to evaluate.
+        device (torch.device): The device (CPU or GPU) on which to run the model.
+
+    Output:
+        dict: A dictionary containing mAP metrics computed by torchmetrics.MeanAveragePrecision().
+
+    """
     metric = MeanAveragePrecision()
     model.eval()
     model.to(device)
@@ -47,9 +89,23 @@ def get_mAP(dataloader, model, device):
     mAP = metric.compute()
     return mAP
 
-    
-
+################################################################################    
 def run_experiment(full_train_dataset, valid_dataset, num_classes, BATCH_SIZE, NUM_EXPERIMENTS=5, EPOCHS_PER_EXPERIMENT=100, TRIALS_PER_EXPERIMENT=3):
+    """
+    Runs a series of training experiments with increasing amounts of training data to evaluate model performance.
+
+    Inputs:
+        full_train_dataset (Dataset): The full training dataset to subsample from.
+        valid_dataset (Dataset):      The validation dataset used to compute validation mAP.
+        num_classes (int):            Number of object classes (including background if applicable).
+        BATCH_SIZE (int):             Batch size used for training and validation.
+        NUM_EXPERIMENTS (int):        Number of increasing training set sizes to evaluate. Default is 5.
+        EPOCHS_PER_EXPERIMENT (int):  Number of training epochs per experiment. Default is 100.
+        TRIALS_PER_EXPERIMENT (int):  Number of trials to average per training size. Default is 3.
+
+    Output:
+        list: A list of tuples, each containing (num_samples, mean_mAP, std_mAP) for each experiment.
+    """
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     metric = MeanAveragePrecision()
