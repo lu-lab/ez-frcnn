@@ -84,5 +84,8 @@ EZ-FRCNN was built to make machine learning accessible and user-friendly. Follow
 ## Documentation
 View the full documentation for EZ-FRCNN [here](https://erinshappell.github.io/ez-frcnn-docs).
 
+## Data Availability
+All data used for the applications of EZ-FRCNN discussed in the preprint may be found on [OSF](https://osf.io/z7t9s/).
+
 ## References
 EZ-FRCNN is an implementation of Faster R-CNN, an algorithm developed by [Ren et al](https://ieeexplore.ieee.org/document/7485869).
