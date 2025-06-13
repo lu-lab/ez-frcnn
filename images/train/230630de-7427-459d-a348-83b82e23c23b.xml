@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotation>
+	<object>
+		<x>1457</x>
+		<y>2379</y>
+		<width>240</width>
+		<height>367</height>
+		<label>frog</label>
+	</object>
+	<object>
+		<x>1740</x>
+		<y>2419</y>
+		<width>179</width>
+		<height>207</height>
+		<label>frog</label>
+	</object>
+</annotation>
