@@ -5,7 +5,7 @@ EZ-FRCNN is a user-friendly implementation of the popular Faster Region-based Co
 ![fig1v4](https://github.com/user-attachments/assets/4c9122a1-6fc1-4a39-9d61-5aa0b0c71db0)
 
 ## Features
-- Easy installation and environment setup for all OSes
+- Fast (<30 min), easy installation and environment setup for all OSes
 - Jupyter Notebook & full GUI available
 - Simple in-house annotation tools
 - **Fast training**: around 1 hour on a single GPU for a standard dataset
@@ -23,7 +23,7 @@ EZ-FRCNN is a user-friendly implementation of the popular Faster Region-based Co
 6. [References](#references)
 
 ## Requirements
-We provide instructions for installing EZ-FRCNN on Windows or MacOS below. While a GPU is **highly recommended** to use EZ-FRCNN, it is not required.
+We provide instructions for installing EZ-FRCNN on Windows or MacOS below. While a GPU is **highly recommended** to use EZ-FRCNN, it is not required. Docker automatically handles the installation of all required software dependencies, so we omit this information here.
 
 ## Installation (Windows)
 1. Install [Docker for Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
