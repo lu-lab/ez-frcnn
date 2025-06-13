@@ -19,8 +19,12 @@ EZ-FRCNN is a user-friendly implementation of the popular Faster Region-based Co
     - [Installation (Windows)](#installation-windows)
     - [Installation (MacOs)](#installation-macos)
 4. [Getting Started](#getting-started)
-5. [Documentation](#documentation)
-6. [References](#references)
+   - [Step 0: (Optional) Demo](#step-0-optional-demo---try-ez-frcnn-on-a-demo-dataset)
+   - [Step 1: Annotation](#step-1-annotation---labeling-your-images)
+   - [Step 2: Training](#step-2-training--teaching-the-model-to-recognize-your-objects)
+   - [Step 3: Inferencing](#step-3-inferencing--using-the-model-to-detect-objects-in-new-images)
+6. [Documentation](#documentation)
+7. [References](#references)
 
 ## Requirements
 ### OS Requirements
@@ -57,7 +61,10 @@ Docker automatically handles the installation of all required software dependenc
 8. Double-click `ez-frcnn.app` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.dmg` to launch the GUI.
 
 ## Getting Started
-### Step 1: Annotation - Labeling your Images
+### Step 0: (Optional) Demo - Try EZ-FRCNN on a demo dataset
+We provide a demo for EZ-FRCNN in this repository (``demo.ipynb``) for new users who would like to try the program on an existing dataset. This demo will walk you through the steps outlined below and should take between **30-60 minutes** to complete depending on your computer hardware.
+
+### Step 1: Annotation - Labeling Your Images
 Annotation is the process of labeling the objects in your images that you want the model to recognize. This might include specific structures, organisms, or other items you’re interested in identifying.
 1. **Select Images to Annotate**: Before opening the app, place all images you would like to annotate to the `ez-frcnn/annotations` folder.
 2. **Select Your Classes**: After opening the annotation app, choose the classes (category) you want to annotate. For example, if you’re labeling cells, you can create classes like “nucleus” or “cell membrane.”
@@ -80,7 +87,7 @@ Once your images are annotated, you’re ready to train the model. Training is w
 3. **Finish Training**: Once the model completes training, it will be ready to use.
 >Tip: If you have a larger set of annotated images, the model can learn more accurately, but training might take longer. Start with a small set, and as you grow comfortable, you can add more images and retrain.
 
-### Step 3: Inference – Using the Model to Detect Objects in New Images
+### Step 3: Inferencing – Using the Model to Detect Objects in New Images
 Inference is when the trained model applies what it’s learned to new, unlabeled images. Here, the model will identify and label objects on its own based on the patterns it learned during training.
 1. **Select New Images**: Place new images where you want the model to detect objects automatically into `ez-frcnn/test_data/test_images`.
 2. **Run Inference**: Select the `Run Inference` option in EZ-FRCNN. The model will process your images and label objects based on your training.
