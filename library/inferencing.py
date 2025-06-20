@@ -341,7 +341,7 @@ def inference_images_fast(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES
                       predicted classes, and detection scores for that image.
     """
     # Collect all image paths
-    image_extensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp']
+    image_extensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp', 'tif']
     all_image_paths = []
     for ext in image_extensions + [ext.upper() for ext in image_extensions]:
         all_image_paths.extend(glob.glob(f"{DIR_TEST}/*.{ext}"))
