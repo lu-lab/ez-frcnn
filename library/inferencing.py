@@ -70,7 +70,7 @@ def saveResultsToCSV(csvFileName, results, OUT_DIR):
 def inference_video(DIR_TEST, OUT_DIR, vidName, model, detection_threshold, CLASSES, save_detections=False):
     """
     Runs object detection on a video, annotates detected objects frame-by-frame, 
-    optionally saves detected regions, and writes the annotated video to disk.
+    saves detected regions, and writes the annotated video to disk.
 
     Inputs:
         DIR_TEST (str):                   Path to the input video file for inference.
@@ -158,6 +158,88 @@ def inference_video(DIR_TEST, OUT_DIR, vidName, model, detection_threshold, CLAS
         if idx == NUM_FRAMES:
             vid.release()
             out.release()
+    print('TEST PREDICTIONS COMPLETE') 
+    return [bboxes, classes, scores]
+
+################################################################################   
+def inference_video_clean(sourceVid, model, detection_threshold, CLASSES):
+    """
+    Runs object detection on a video, annotates detected objects frame-by-frame
+    and saves detected regions. Does NOT save an annotated video.
+
+    Inputs:
+        DIR_TEST (str):                   Path to the input video file for inference.
+        vidName (str):                    Filename for the output annotated video.
+        model (torch.nn.Module):          Trained object detection model.
+        detection_threshold (float):      Confidence threshold for filtering detections.
+        CLASSES (list):                   List of class names corresponding to model outputs.
+        save_detections (bool, optional): If True, saves detected bounding box regions as separate images. Default is False.
+
+    Outputs:
+        list: A list containing three elements for all frames:
+            - bboxes (list): Detected bounding boxes per frame.
+            - classes (list): Detected class labels per frame.
+            - sscores (list): Detection scores per frame.
+    """    
+    vid = cv2.VideoCapture(sourceVid)
+    property_id = int(cv2.CAP_PROP_FRAME_COUNT) 
+    NUM_FRAMES = int(cv2.VideoCapture.get(vid, property_id))
+    idx = 1
+    width   = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height  = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps     = vid.get(cv2.CAP_PROP_FPS)
+
+    classes  = [None] * NUM_FRAMES
+    bboxes   = [None] * NUM_FRAMES
+    sscores  = [None] * NUM_FRAMES
+    
+    while vid.isOpened():
+        ret, image = vid.read()
+
+        if ret:
+            orig_image = image.copy()
+            # BGR to RGB
+            image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB).astype(np.float32)
+            # make the pixel range between 0 and 1
+            image /= 255.0
+            # bring color channels to front
+            image = np.transpose(image, (2, 0, 1)).astype(float)
+            # convert to tensor
+            image = torch.tensor(image, dtype=torch.float).cuda()
+            # add batch dimension
+            image = torch.unsqueeze(image, 0)
+            with torch.no_grad():
+                outputs = model(image)
+            
+            # load all detection to CPU for further operations
+            outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+            # carry further only if there are detected boxes
+            if len(outputs[0]['boxes']) != 0:
+                boxes = outputs[0]['boxes'].data.numpy()
+                scores = outputs[0]['scores'].data.numpy()
+                sscores[idx] = scores[scores >= detection_threshold]
+                
+                # filter out boxes according to `detection_threshold`
+                boxes = boxes[scores >= detection_threshold].astype(np.int32)
+                bboxes[idx] = boxes
+                 
+                # get all the predicited class names
+                pred_classes = [CLASSES[i] for i in outputs[0]['labels'].cpu().numpy()]
+                pred_classes = np.array(pred_classes)
+                pred_classes = pred_classes[scores >= detection_threshold]
+                classes[idx] = pred_classes
+
+            idx += 1
+            print(f"Image {idx+1} done...")
+            print('-'*50)
+            clear_output(wait=True)
+            if idx == NUM_FRAMES:
+                vid.release()
+
+        else:
+            vid.release()
+
+    clear_output(wait=True)
     print('TEST PREDICTIONS COMPLETE') 
     return [bboxes, classes, sscores]
 
