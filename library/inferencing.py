@@ -577,4 +577,29 @@ def inference_images_figs(DIR_TEST, model, OUT_DIR, detection_threshold, CLASSES
         print('-'*50)
 
     print('TEST PREDICTIONS COMPLETE') 
-    return [bboxes, classes, sscores]
+    return [bboxes, classes, scores]
+
+################################################################################   
+def saveBestBoxes(boxPath, boxes):
+    """
+    Saves the highest scored bounding box from each frame to a CSV file.
+
+    Inputs:
+        boxPath (str):                   File path to save the bounding boxes CSV.
+        boxes (list of ndarray or None): List where each element contains bounding boxes for a frame; may be None or empty.
+
+    Outputs:
+        None (saves bounding boxes to the specified CSV file).
+    """
+    # Save only the best scored box from each frame
+    boxArray = np.zeros((len(boxes),4))
+    for i in range(0,len(boxes)):
+        if boxes[i] is None: continue
+        if len(boxes[i])>0: boxArray[i] = boxes[i][0]
+
+    # Convert to pandas dataframe
+    boxData = pd.DataFrame(boxArray)
+
+    # Save as csv
+    boxData.to_csv(boxPath, index=False, header=False) 
+    print('Bounding boxes saved to ' + boxPath)
