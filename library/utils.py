@@ -232,3 +232,63 @@ def get_loaders(train_dataset, valid_dataset, BATCH_SIZE, collate_fn):
     collate_fn=collate_fn
     )
     return [train_loader, valid_loader]
+
+################################################################################   
+def save_clean_video(vid_path=None, label_path=None, out_path=None, lw=3, color=(51, 114, 252)):
+    """
+    Overlays bounding boxes from EZ-FRCNN onto a video and saves the labeled video.
+
+    Inputs:
+        vid_path (str):   Path to the input video file.
+        label_path (str): Path to the CSV file containing bounding box labels 
+                          in the format [x1, y1, x2, y2] per frame.
+        out_path (str):   Path where the labeled output video will be saved.
+        lw (int):         Line width of the bounding boxes (default: 3).
+        color (tuple):    RGB color of the bounding boxes (default: (51, 114, 252)).
+
+    Output:
+        No direct function output--saves the labeled video to the given output path.
+    """
+    # Load video
+    vid        = cv2.VideoCapture(vid_path)
+    width      = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height     = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps        = vid.get(cv2.CAP_PROP_FPS)
+    tot_frames = vid.get(cv2.CAP_PROP_FRAME_COUNT)  
+    
+    # Load labels
+    labels = pd.read_csv(label_path)
+    labels = labels.to_numpy()
+    
+    # Create name for output video
+    vwriter  = cv2.VideoWriter(out_path,
+                              cv2.VideoWriter_fourcc(*'MJPG'),
+                              fps, (width, height))
+    
+    # Initialize variables
+    f = 1
+    success = True
+    while success and f < labels.shape[0]:
+        # Read next image
+        success, frame = vid.read()
+
+        if success and f < labels.shape[0]:
+            print("frame: ", f-1)
+
+            # Label frame
+            new_frame = cv2.rectangle(frame.copy(),
+                                     (int(labels[f-1][0]), int(labels[f-1][1])),
+                                     (int(labels[f-1][2]), int(labels[f-1][3])),
+                                     color, lw)
+
+            # Save labeled frame to video
+            vwriter.write(new_frame)
+
+        # Move to next frame
+        f += 1
+        clear_output(wait=True)
+
+    # Release writer and save video
+    vwriter.release()
+    clear_output(wait=True)
+    print("Video saved to ", out_path)
