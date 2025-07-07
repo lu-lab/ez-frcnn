@@ -30,7 +30,7 @@ EZ-FRCNN is a user-friendly implementation of the popular Faster Region-based Co
 
 ## Requirements
 ### OS Requirements
-We provide instructions for installing EZ-FRCNN on Windows (11 v24H2 or higher) or MacOS (Sequoia 15.5 or higher) below. 
+We provide instructions for installing EZ-FRCNN on Windows (11 v24H2 or higher) or MacOS (Intel chip; Sequoia 15.5 or higher) below. 
 
 ### Hardware Requirements
 While a GPU is **highly recommended** to use EZ-FRCNN, it is not required. 
