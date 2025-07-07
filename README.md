@@ -59,8 +59,7 @@ Docker automatically handles the installation of all required software dependenc
    cd ez-frcnn
    ```
 6. Extract the contents of the ZIP file downloaded in the last step to a folder of your choice (SKIP if you used `git clone`).
-7. Open the EZ-FRCNN folder, double click `ez-frcnn.dmg`, and drag the `.app` file into your current working folder.
-8. Double-click `ez-frcnn.app` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.dmg` to launch the GUI.
+7. Double-click `ez-frcnn.command` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.command` to launch the GUI.
 
 ## Getting Started
 ### Step 0: (Optional) Demo - Try EZ-FRCNN on a demo dataset
