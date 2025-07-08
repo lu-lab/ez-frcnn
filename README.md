@@ -46,8 +46,8 @@ Docker automatically handles the installation of all required software dependenc
    git clone https://github.com/lu-lab/ez-frcnn.git
    cd ez-frcnn
    ```
-5. Extract the contents of the ZIP file downloaded in the last step to a folder of your choice (SKIP if you used `git clone`).
-6. Open the EZ-FRCNN folder and double-click `ez-frcnn.bat` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.bat` to launch the GUI.
+4. Extract the contents of the ZIP file downloaded in the last step to a folder of your choice (SKIP if you used `git clone`).
+5. Open the EZ-FRCNN folder and double-click `ez-frcnn.bat` to launch EZ-FRCNN. OR for a **more user-friendly experience**, double-click `ez-frcnnPane.bat` to launch the GUI.
 
 ## Installation (MacOS)
 1. Navigate to our [Mac branch of this repository](https://github.com/JacobWheelock/ez-frcnn/tree/mac).
