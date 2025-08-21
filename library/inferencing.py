@@ -603,3 +603,78 @@ def saveBestBoxes(boxPath, boxes):
     # Save as csv
     boxData.to_csv(boxPath, index=False, header=False) 
     print('Bounding boxes saved to ' + boxPath)
+
+################################################################################ 
+def saveBoxesClassesScores(boxesFileName, classFileName, scoreFileName, boxes, classes, scores, OUT_DIR):
+    """
+    Saves bounding boxes, classes, and scores from all detections for each frame into separate CSV files.
+
+    Inputs:
+        boxesFileName (str):       Name for the bounding boxes CSV file.
+        classFileName (str):       Name for the classes CSV file.
+        scoreFileName (str):       Name for the scores CSV file.
+        boxes (list of ndarray):   List where each element contains bounding boxes for a frame.
+        classes (list of ndarray): List where each element contains class labels for a frame.
+        scores (list of ndarray):  List where each element contains detection confidence scores
+        OUT_DIR (str):             Path where the CSV files will be saved.
+
+    Outputs:
+        None (saves bounding boxes, classes, and scores to separate CSV files in the specified directory).
+    """
+    classPath = OUT_DIR + '/' + classFileName + '.csv'
+    boxPath = OUT_DIR + '/' + boxesFileName + '.csv'
+    scorePath = OUT_DIR + '/' + scoreFileName + '.csv'
+    with open(boxPath, 'w', newline='') as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        for el in boxes:
+            if (type(el) == type(None)):
+                writer.writerow([0])
+            else:
+                writer.writerow(el)
+    with open(classPath, 'w', newline='') as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        for el in classes:
+            if (type(el) == type(None)):
+                writer.writerow([0])
+            else:
+                writer.writerow(el)
+
+    with open(scorePath, 'w', newline='') as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        for el in scores:
+            if (type(el) == type(None)):
+                writer.writerow([0])
+            else:
+                writer.writerow(el)
+
+################################################################################ 
+def batch_process_videos(folders, model, detection_threshold, classes, extensions=(".mp4", ".avi", ".mov", ".mkv", ".wmv")):
+    """
+    Inferences all videos within a user-specified list of folders.
+
+    INPUTS
+        folders (list of str)               - List of folder paths containing videos to process.
+        model                               - EZ-FRCNN model to use for processing.
+        detection_threshold                 - Threshold used to filter predictions (higher value = stricter, more predictions filtered out)
+        classes (list of str)               - Class labels being detected.
+        extensions (tuple of str, optional) - File extensions to look for. Defaults to common video formats (mp4, avi, mov, mkv).
+
+    """
+    for folder in folders:
+        if not os.path.isdir(folder):
+            print(f"Skipping: {folder} (not a valid directory)")
+            continue
+
+        print(f"\nSearching in folder: {folder}")
+        for ext in extensions:
+            video_paths = glob.glob(os.path.join(folder, f"*{ext}"))
+            for video_path in video_paths:
+                try:
+                    print(f"Processing: {video_path}")
+                    video_name  = os.path.splitext(os.path.basename(video_path))[0]
+                    output_name = video_name + '_labeled.avi'
+                    [boxFileName, classFileName, scoreFileName] = [video_name + '_boxes', video_name + '_classes', video_name + '_scores']
+                    [bboxes, classes, scores] = inference_video(video_path, folder, output_name, model, detection_threshold, classes)
+                    saveBoxesClassesScores(boxFileName, classFileName, scoreFileName, bboxes, classes, scores, folder)
+                except Exception as e:
+                    print(f"Error processing {video_path}: {e}")
